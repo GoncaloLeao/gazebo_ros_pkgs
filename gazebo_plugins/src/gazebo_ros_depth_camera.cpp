@@ -266,25 +266,22 @@ void GazeboRosDepthCamera::OnNewRGBPointCloud(const float *_pcd,
       sensor_msgs::PointCloud2Iterator<float> iter_x(point_cloud_msg_, "x");
       sensor_msgs::PointCloud2Iterator<float> iter_y(point_cloud_msg_, "y");
       sensor_msgs::PointCloud2Iterator<float> iter_z(point_cloud_msg_, "z");
-      sensor_msgs::PointCloud2Iterator<float> iter_rgb(point_cloud_msg_, "rgb");
+      sensor_msgs::PointCloud2Iterator<uint8_t> iter_r(point_cloud_msg_, "r");
+      sensor_msgs::PointCloud2Iterator<uint8_t> iter_g(point_cloud_msg_, "g");
+      sensor_msgs::PointCloud2Iterator<uint8_t> iter_b(point_cloud_msg_, "b");
+
 
       for (unsigned int i = 0; i < _width; i++)
       {
-        for (unsigned int j = 0; j < _height; j++, ++iter_x, ++iter_y, ++iter_z, ++iter_rgb)
+        for (unsigned int j = 0; j < _height; j++, ++iter_x, ++iter_y, ++iter_z, ++iter_r, ++iter_g, ++iter_b)
         {
           unsigned int index = (j * _width) + i;
           *iter_x = _pcd[4 * index];
           *iter_y = _pcd[4 * index + 1];
           *iter_z = _pcd[4 * index + 2];
-          *iter_rgb = _pcd[4 * index + 3];
-          if (i == _width /2 && j == _height / 2)
-          {
-            uint32_t rgb = *reinterpret_cast<int*>(&(*iter_rgb));
-            uint8_t r = (rgb >> 16) & 0x0000ff;
-            uint8_t g = (rgb >> 8)  & 0x0000ff;
-            uint8_t b = (rgb)       & 0x0000ff;
-            std::cerr << (int)r << " " << (int)g << " " << (int)b << "\n";
-          }
+          *iter_r = floor(_pcd[4 * index + 3] / 256.0f / 256.0f);
+          *iter_g = floor((_pcd[4 * index + 3] - *iter_r * 256.0f * 256.0f) / 256.0f);
+          *iter_b = floor(_pcd[4 * index + 3] - *iter_r * 256.0f * 256.0f - *iter_g * 256.0f);
         }
       }
 
